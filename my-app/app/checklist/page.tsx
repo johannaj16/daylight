@@ -7,11 +7,13 @@ interface Task {
   text: string;
   completed: boolean;
   createdAt: Date;
+  isEditing?: boolean;
 }
 
 export default function ChecklistPage() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [newTaskText, setNewTaskText] = useState('');
+  const [editingText, setEditingText] = useState('');
 
   const addTask = () => {
     if (newTaskText.trim()) {
@@ -34,6 +36,39 @@ export default function ChecklistPage() {
 
   const deleteTask = (id: string) => {
     setTasks(tasks.filter(task => task.id !== id));
+  };
+
+  const startEditing = (id: string, currentText: string) => {
+    setTasks(tasks.map(task => 
+      task.id === id ? { ...task, isEditing: true } : { ...task, isEditing: false }
+    ));
+    setEditingText(currentText);
+  };
+
+  const saveEdit = (id: string) => {
+    if (editingText.trim()) {
+      setTasks(tasks.map(task => 
+        task.id === id ? { ...task, text: editingText.trim(), isEditing: false } : task
+      ));
+    } else {
+      // If empty, cancel the edit
+      cancelEdit(id);
+    }
+  };
+
+  const cancelEdit = (id: string) => {
+    setTasks(tasks.map(task => 
+      task.id === id ? { ...task, isEditing: false } : task
+    ));
+    setEditingText('');
+  };
+
+  const handleEditKeyPress = (e: React.KeyboardEvent, id: string) => {
+    if (e.key === 'Enter') {
+      saveEdit(id);
+    } else if (e.key === 'Escape') {
+      cancelEdit(id);
+    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -129,23 +164,73 @@ export default function ChecklistPage() {
                     </svg>
                   )}
                 </button>
-                <span
-                  className={`flex-1 text-lg font-normal transition-all ${
-                    task.completed
-                      ? 'text-gray-500 line-through'
-                      : 'text-gray-800'
-                  }`}
-                >
-                  {task.text}
-                </span>
-                <button
-                  onClick={() => deleteTask(task.id)}
-                  className="opacity-0 group-hover:opacity-100 p-1 text-gray-400 hover:text-red-500 transition-all"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                  </svg>
-                </button>
+                
+                {task.isEditing ? (
+                  <div className="flex-1 flex items-center gap-2">
+                    <input
+                      type="text"
+                      value={editingText}
+                      onChange={(e) => setEditingText(e.target.value)}
+                      onKeyDown={(e) => handleEditKeyPress(e, task.id)}
+                      onBlur={() => saveEdit(task.id)}
+                      className="flex-1 text-lg font-normal text-gray-800 border-none outline-none bg-transparent"
+                      autoFocus
+                    />
+                    <button
+                      onClick={() => saveEdit(task.id)}
+                      className="p-1 text-green-600 hover:text-green-800 transition-colors"
+                      title="Save (Enter)"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                    </button>
+                    <button
+                      onClick={() => cancelEdit(task.id)}
+                      className="p-1 text-gray-500 hover:text-gray-700 transition-colors"
+                      title="Cancel (Escape)"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  </div>
+                ) : (
+                  <span
+                    className={`flex-1 text-lg font-normal transition-all cursor-pointer ${
+                      task.completed
+                        ? 'text-gray-500 line-through'
+                        : 'text-gray-800'
+                    }`}
+                    onDoubleClick={() => startEditing(task.id, task.text)}
+                    title="Double-click to edit"
+                  >
+                    {task.text}
+                  </span>
+                )}
+                
+                {!task.isEditing && (
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => startEditing(task.id, task.text)}
+                      className="opacity-0 group-hover:opacity-100 p-1 text-gray-400 hover:text-blue-500 transition-all"
+                      title="Edit task"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                      </svg>
+                    </button>
+                    <button
+                      onClick={() => deleteTask(task.id)}
+                      className="opacity-0 group-hover:opacity-100 p-1 text-gray-400 hover:text-red-500 transition-all"
+                      title="Delete task"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    </button>
+                  </div>
+                )}
               </div>
             ))
           )}
