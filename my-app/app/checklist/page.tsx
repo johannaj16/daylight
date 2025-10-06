@@ -172,7 +172,6 @@ export default function ChecklistPage() {
                       value={editingText}
                       onChange={(e) => setEditingText(e.target.value)}
                       onKeyDown={(e) => handleEditKeyPress(e, task.id)}
-                      onBlur={() => saveEdit(task.id)}
                       className="flex-1 text-lg font-normal text-gray-800 border-none outline-none bg-transparent"
                       autoFocus
                     />
