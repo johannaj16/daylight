@@ -1,6 +1,11 @@
-'use-client'
+'use client'
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import type { Task } from '@/lib/sessions';
+
+type Props = {
+  onTasksChange?: (tasks: Task[]) => void;
+};
 
 interface Task {
   id: string;
@@ -10,10 +15,14 @@ interface Task {
   isEditing?: boolean;
 }
 
-export default function TodoList() {
+export default function TodoList({ onTasksChange }: Props) {
     const [tasks, setTasks] = useState<Task[]>([]);
     const [newTaskText, setNewTaskText] = useState('');
     const [editingText, setEditingText] = useState('');
+
+  useEffect(() => {
+    onTasksChange?.(tasks);
+  }, [tasks, onTasksChange]);
 
     const addTask = () => {
       if (newTaskText.trim()) {
@@ -77,9 +86,6 @@ export default function TodoList() {
       }
     };
 
-    const completedCount = tasks.filter(task => task.completed).length;
-    const totalCount = tasks.length;
-
     return (
         <div className="">
             <div className="mx-auto px-6">
@@ -102,7 +108,7 @@ export default function TodoList() {
                 <button
                     onClick={addTask}
                     disabled={!newTaskText.trim()}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+                    className="px-4 py-2 bg-gray-500 cursor-pointer text-white rounded-md hover:bg-gray-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
                 >
                     Add
                 </button>

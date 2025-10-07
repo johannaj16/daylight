@@ -15,7 +15,7 @@ export default function VerticalNavbar() {
   ];
 
   return (
-    <nav className="left-0 top-0 h-screen w-56 bg-gray-900 text-white flex flex-col p-6">
+    <nav className="sticky left-0 top-0 h-screen w-56 bg-gray-900 text-white flex flex-col p-6">
       <div className="flex gap-3 items-center ml-2 text-2xl font-bold mb-6">Daylight
         <span><Sun /></span>
       </div>

@@ -37,8 +37,8 @@ export default function Journal({
   }, [text, storageKey, autosaveMs]);
 
   return (
-    <section className="rounded-xl border bg-white shadow-sm m-6">
-      <div className="flex items-center justify-between px-4 py-3 border-b">
+    <section className="rounded-xl border border-gray-300 bg-white shadow-sm m-6">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-gray-300">
         <h2 className="font-semibold text-gray-500">Journal</h2>
         <div className="text-xs text-gray-500">
           {savedAt ? `Autosaved ${savedAt.toLocaleTimeString()}` : 'Not saved yet'}
