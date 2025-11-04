@@ -6,6 +6,7 @@ import StarterKit from '@tiptap/starter-kit';
 import Placeholder from '@tiptap/extension-placeholder';
 import Underline from '@tiptap/extension-underline';
 import { loadSessions, type WorkSession } from '@/lib/sessions';
+import { formatDateKey, getJournalContent, setJournalContent } from '@/lib/days';
 import { 
   Bold, 
   Italic, 
@@ -63,31 +64,37 @@ export default function Journal({
     },
   });
 
-  // Load from localStorage on mount
+  // Load from day-based storage on mount
   useEffect(() => {
     if (!editor || !isMounted) return;
     try {
-      const saved = localStorage.getItem(storageKey);
-      if (saved) {
-        editor.commands.setContent(saved);
-        setEditorContent(saved);
+      const date = storageKey.split(':')[1] || formatDateKey();
+      const content = getJournalContent(date);
+      if (content) {
+        editor.commands.setContent(content);
+        setEditorContent(content);
       } else {
         // Even if no saved content, mark as loaded
         setEditorContent(editor.getHTML());
       }
       setHasLoadedFromStorage(true);
-    } catch {}
+    } catch (err) {
+      console.error('Failed to load journal:', err);
+    }
   }, [editor, storageKey, isMounted]);
 
-  // Debounced autosave (only after initial load from storage)
+  // Debounced autosave to day-based storage (only after initial load)
   useEffect(() => {
     if (!editor || !isMounted || !hasLoadedFromStorage) return;
     
     const id = setTimeout(() => {
       try {
-        localStorage.setItem(storageKey, editorContent);
+        const date = storageKey.split(':')[1] || formatDateKey();
+        setJournalContent(date, editorContent);
         setSavedAt(new Date());
-      } catch {}
+      } catch (err) {
+        console.error('Failed to save journal:', err);
+      }
     }, autosaveMs);
     
     return () => clearTimeout(id);

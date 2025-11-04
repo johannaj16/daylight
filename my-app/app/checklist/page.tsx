@@ -24,7 +24,7 @@ export default function ChecklistPage() {
           <h1 className="">{formattedDate}</h1>
           <div className="mt-2 h-0.5 bg-gray-200"></div>
         </div>
-        <TodoList />
+        <TodoList useDayStorage />
         <Journal storageKey={todayKey} />
         <WorkSessionList />
       </div>

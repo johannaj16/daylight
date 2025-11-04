@@ -3,64 +3,80 @@
 
 import { useState, useEffect } from 'react';
 import type { Task as LibTask } from '@/lib/sessions';
+import { getDayData, saveDayData, formatDateKey } from '@/lib/days';
 
 type Props = {
   // keep this flexible so existing callers (which expect createdAt as Date) remain compatible
   onTasksChange?: (tasks: any[]) => void;
-  // key to use in localStorage so multiple TodoList instances don't overwrite each other
+  // key to use in localStorage for transient todos (like work session todos)
   storageKey?: string;
+  // if true, uses day-based storage instead of direct localStorage
+  useDayStorage?: boolean;
 };
 
 // Local task type extends the persisted Task type with an optional UI-only flag
 type Task = LibTask & { isEditing?: boolean };
 
-export default function TodoList({ onTasksChange, storageKey = 'DailyJournalTodos' }: Props) {
-  const STORAGE_KEY = storageKey;
-
+export default function TodoList({ 
+  onTasksChange, 
+  storageKey = 'WorkSessionTodos',
+  useDayStorage = false 
+}: Props) {
   const [tasks, setTasks] = useState<Task[]>([]);
-    const [newTaskText, setNewTaskText] = useState('');
-    const [editingText, setEditingText] = useState('');
+  const [newTaskText, setNewTaskText] = useState('');
+  const [editingText, setEditingText] = useState('');
   const [hydrated, setHydrated] = useState(false);
 
-  // Load tasks from localStorage once on mount
+  // Load tasks from appropriate storage once on mount
   useEffect(() => {
     try {
       if (typeof window === 'undefined') return;
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) return;
-      const parsed = JSON.parse(raw) as Task[];
-      setTasks(parsed);
+
+      if (useDayStorage) {
+        // Load from day-based storage
+        const day = getDayData(formatDateKey());
+        setTasks(day.dailyTodos.map(t => ({ ...t, isEditing: false })));
+      } else {
+        // Load from direct localStorage (for work session todos)
+        const raw = localStorage.getItem(storageKey);
+        if (raw) {
+          const parsed = JSON.parse(raw) as Task[];
+          setTasks(parsed);
+        }
+      }
     } catch (e) {
-      // ignore parse errors
-      console.error('Failed to load todos from localStorage', e);
+      console.error('Failed to load todos:', e);
     }
-    // mark hydrated regardless so we don't block persisting forever
     setHydrated(true);
-  }, [STORAGE_KEY]);
+  }, [storageKey, useDayStorage]);
 
-  // Persist tasks to localStorage whenever they change
+  // Persist tasks whenever they change
   useEffect(() => {
-    // don't persist until we've loaded the initial value from storage
     if (!hydrated) return;
+    if (typeof window === 'undefined') return;
 
     try {
-      if (typeof window === 'undefined') return;
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
-    } catch (e) {
-      console.error('Failed to save todos to localStorage', e);
-    }
+      if (useDayStorage) {
+        // Save to day-based storage
+        const day = getDayData(formatDateKey());
+        day.dailyTodos = tasks.map(({ isEditing, ...t }) => t); // Remove UI-only field
+        saveDayData(day);
+      } else {
+        // Save to direct localStorage (for work session todos)
+        localStorage.setItem(storageKey, JSON.stringify(tasks));
+      }
 
-    // Convert createdAt (ISO string) to Date objects for callers that expect Date
-    try {
+      // Convert createdAt for callers that expect Date objects
       const exported = tasks.map((t) => ({
         ...t,
         createdAt: t.createdAt ? new Date(t.createdAt) : undefined,
       }));
       onTasksChange?.(exported as any[]);
     } catch (e) {
+      console.error('Failed to save todos:', e);
       onTasksChange?.(tasks as any[]);
     }
-  }, [tasks, onTasksChange, STORAGE_KEY, hydrated]);
+  }, [tasks, onTasksChange, storageKey, hydrated, useDayStorage]);
 
     const addTask = () => {
       if (newTaskText.trim()) {

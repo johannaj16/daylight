@@ -78,7 +78,7 @@ export default function LogSessionPopup({
       focusRating,
       improvementNotes: notes.trim() || undefined,
     });
-    onClose();
+    // onClose();
   };
 
   const onKeyDown = (e: React.KeyboardEvent) => {

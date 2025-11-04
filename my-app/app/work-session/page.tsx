@@ -24,7 +24,7 @@ export default function WorkSessionPage() {
   const [showReflections, setShowReflections] = useState(false);
   const [loggedSessionId, setLoggedSessionId] = useState<string | null>(null);
   const [reflections, setReflections] = useState<Record<string, string>>({});
-  const showPrompt = useMemo(() => pendingDurationSec !== null && !showReflections, [pendingDurationSec, showReflections]);
+  const showPrompt = pendingDurationSec !== null;
 
   const handleTasksChange = useCallback((tasks: TodoListTask[]) => {
     // Convert tasks from TodoList format (createdAt: Date) to sessions format (createdAt?: string)
@@ -40,9 +40,12 @@ export default function WorkSessionPage() {
   function handleTimerComplete(durationSec: number) {
     // Timer finished—let user confirm logging
     setPendingDurationSec(durationSec);
+    // bump promptVersion so the popup remounts reliably on repeated completes
+    setPromptVersion((v) => v + 1);
   }
 
   const [timerVersion, setTimerVersion] = useState(0);
+  const [promptVersion, setPromptVersion] = useState(0);
 
   function handleLogSession(data: any) {
     if (pendingDurationSec == null) return;
@@ -105,20 +108,19 @@ export default function WorkSessionPage() {
         </div>
 
         {/* Log session prompt */}
-        {showPrompt && 
-        <LogSessionPopup
-          open={showPrompt}
-          pendingDurationSec={pendingDurationSec}
-          tasksSnapshot={tasksSnapshot}
-          onSubmit={(data) => {
-            if (!data.shouldLog) return;
-            console.log(data.focusRating)
-            console.log(data.improvementNotes)
-            handleLogSession(data);
-          }}
-          onClose={() => setPendingDurationSec(null)}
-        />
-      }
+        {showPrompt && (
+          <LogSessionPopup
+            key={promptVersion}
+            open={showPrompt}
+            pendingDurationSec={pendingDurationSec}
+            tasksSnapshot={tasksSnapshot}
+            onSubmit={(data) => {
+              if (!data.shouldLog) return;
+              handleLogSession(data);
+            }}
+            onClose={() => setPendingDurationSec(null)}
+          />
+        )}
       </div>
     </div>
   );
