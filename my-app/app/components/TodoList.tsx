@@ -1,27 +1,57 @@
+
 'use client'
 
 import { useState, useEffect } from 'react';
-import type { Task } from '@/lib/sessions';
+import type { Task as LibTask } from '@/lib/sessions';
 
 type Props = {
-  onTasksChange?: (tasks: Task[]) => void;
+  // keep this flexible so existing callers (which expect createdAt as Date) remain compatible
+  onTasksChange?: (tasks: any[]) => void;
 };
 
-interface Task {
-  id: string;
-  text: string;
-  completed: boolean;
-  createdAt: Date;
-  isEditing?: boolean;
-}
+// Local task type extends the persisted Task type with an optional UI-only flag
+type Task = LibTask & { isEditing?: boolean };
 
 export default function TodoList({ onTasksChange }: Props) {
+    const STORAGE_KEY = 'todoList:tasks';
+
     const [tasks, setTasks] = useState<Task[]>([]);
     const [newTaskText, setNewTaskText] = useState('');
     const [editingText, setEditingText] = useState('');
 
+  // Load tasks from localStorage once on mount
   useEffect(() => {
-    onTasksChange?.(tasks);
+    try {
+      if (typeof window === 'undefined') return;
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return;
+      const parsed = JSON.parse(raw) as Task[];
+      setTasks(parsed);
+    } catch (e) {
+      // ignore parse errors
+      console.error('Failed to load todos from localStorage', e);
+    }
+  }, []);
+
+  // Persist tasks to localStorage whenever they change
+  useEffect(() => {
+    try {
+      if (typeof window === 'undefined') return;
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+    } catch (e) {
+      console.error('Failed to save todos to localStorage', e);
+    }
+
+    // Convert createdAt (ISO string) to Date objects for callers that expect Date
+    try {
+      const exported = tasks.map((t) => ({
+        ...t,
+        createdAt: t.createdAt ? new Date(t.createdAt) : undefined,
+      }));
+      onTasksChange?.(exported as any[]);
+    } catch (e) {
+      onTasksChange?.(tasks as any[]);
+    }
   }, [tasks, onTasksChange]);
 
     const addTask = () => {
@@ -30,7 +60,7 @@ export default function TodoList({ onTasksChange }: Props) {
           id: Date.now().toString(),
           text: newTaskText.trim(),
           completed: false,
-          createdAt: new Date(),
+          createdAt: new Date().toISOString(),
         };
         setTasks([...tasks, newTask]);
         setNewTaskText('');
