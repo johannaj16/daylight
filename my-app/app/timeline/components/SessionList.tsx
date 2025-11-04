@@ -3,12 +3,17 @@ import SessionCard from './SessionCard';
 
 type Props = {
   sessions: WorkSession[];
+  selectedDay?: string | null;
 };
 
-export default function SessionList({ sessions }: Props) {
+export default function SessionList({ sessions, selectedDay }: Props) {
+  const heading = selectedDay
+    ? `Sessions for ${new Date(selectedDay).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}`
+    : 'All Sessions';
+
   return (
     <div className="mt-8">
-      <h2 className="font-semibold text-xl mb-4">All Sessions</h2>
+      <h2 className="font-semibold text-xl mb-4">{heading}</h2>
       <div className="space-y-3">
         {sessions.map((session) => (
           <SessionCard key={session.id} session={session} />
