@@ -10,6 +10,8 @@ export type WorkSession = {
   startedAtISO: string;
   durationSec: number;
   completedTaskIds: string[];
+  tasks?: Task[]; // Store full task info for display
+  taskReflections?: Record<string, string>; // taskId -> reflection text
 };
 
 const STORAGE_KEY = 'workSessions';
@@ -34,4 +36,13 @@ export function addSession(newSession: WorkSession) {
   const all = loadSessions();
   all.unshift(newSession);
   saveSessions(all);
+}
+
+export function updateSessionReflections(sessionId: string, reflections: Record<string, string>) {
+  const all = loadSessions();
+  const session = all.find(s => s.id === sessionId);
+  if (session) {
+    session.taskReflections = reflections;
+    saveSessions(all);
+  }
 }

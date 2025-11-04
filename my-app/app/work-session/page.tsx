@@ -1,17 +1,40 @@
 'use client';
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 import Timer from "../components/Timer"
 import TodoList from "../components/TodoList"
 import VerticalNavbar from "../components/VerticalNavbar"
 
-import { addSession, type Task, type WorkSession } from '@/lib/sessions';
+import { addSession, updateSessionReflections, type Task, type WorkSession } from '@/lib/sessions';
 
+
+// Task type from TodoList (with createdAt: Date)
+type TodoListTask = {
+  id: string;
+  text: string;
+  completed: boolean;
+  createdAt: Date;
+  isEditing?: boolean;
+};
 
 export default function WorkSessionPage() {
   const [tasksSnapshot, setTasksSnapshot] = useState<Task[]>([]);
   const [pendingDurationSec, setPendingDurationSec] = useState<number | null>(null);
-  const showPrompt = useMemo(() => pendingDurationSec !== null, [pendingDurationSec]);
+  const [showReflections, setShowReflections] = useState(false);
+  const [loggedSessionId, setLoggedSessionId] = useState<string | null>(null);
+  const [reflections, setReflections] = useState<Record<string, string>>({});
+  const showPrompt = useMemo(() => pendingDurationSec !== null && !showReflections, [pendingDurationSec, showReflections]);
+
+  const handleTasksChange = useCallback((tasks: TodoListTask[]) => {
+    // Convert tasks from TodoList format (createdAt: Date) to sessions format (createdAt?: string)
+    const convertedTasks: Task[] = tasks.map(t => ({
+      id: t.id,
+      text: t.text,
+      completed: t.completed,
+      createdAt: t.createdAt instanceof Date ? t.createdAt.toISOString() : undefined,
+    }));
+    setTasksSnapshot(convertedTasks);
+  }, []);
 
   function handleTimerComplete(durationSec: number) {
     // Timer finished—let user confirm logging
@@ -22,15 +45,38 @@ export default function WorkSessionPage() {
     if (pendingDurationSec == null) return;
 
     const completedIds = tasksSnapshot.filter(t => t.completed).map(t => t.id);
+    const sessionId = crypto.randomUUID();
+    // Tasks are already in the correct format from handleTasksChange
+    const tasksForSession: Task[] = tasksSnapshot;
     const newSession: WorkSession = {
-      id: crypto.randomUUID(),
+      id: sessionId,
       startedAtISO: new Date().toISOString(),
       durationSec: pendingDurationSec,
       completedTaskIds: completedIds,
+      tasks: tasksForSession, // Store full task info for display
     };
 
     addSession(newSession);
+    setLoggedSessionId(sessionId);
     setPendingDurationSec(null);
+    setShowReflections(true);
+    // Initialize reflections with empty strings for all tasks
+    const initialReflections: Record<string, string> = {};
+    tasksSnapshot.forEach(task => {
+      initialReflections[task.id] = '';
+    });
+    setReflections(initialReflections);
+  }
+
+  function handleSaveReflections() {
+    if (loggedSessionId) {
+      updateSessionReflections(loggedSessionId, reflections);
+      setShowReflections(false);
+      setLoggedSessionId(null);
+      setReflections({});
+      // Reset tasks snapshot
+      setTasksSnapshot([]);
+    }
   }
 
   return (
@@ -47,7 +93,7 @@ export default function WorkSessionPage() {
           <p className="px-6 mb-6">
             Be as quantitative as possible, (e.g. finish [X] math problems, read [Y] pages)
           </p>
-          <TodoList onTasksChange={setTasksSnapshot} />
+          <TodoList onTasksChange={handleTasksChange} />
         </div>
 
         {/* Log session prompt */}
@@ -72,6 +118,51 @@ export default function WorkSessionPage() {
             >
               Dismiss
             </button>
+          </div>
+        )}
+
+        {/* Reflections interface */}
+        {showReflections && (
+          <div className="px-6 py-6">
+            <div className="rounded-xl border border-gray-300 bg-white shadow-sm">
+              <div className="px-4 py-3 border-b border-gray-300">
+                <h2 className="font-semibold text-gray-500">Reflections</h2>
+                <p className="text-sm text-gray-400 mt-1">Write your reflections for each task from this work session</p>
+              </div>
+              <div className="p-4 space-y-4">
+                {tasksSnapshot.map((task) => (
+                  <div key={task.id} className="space-y-2">
+                    <label className="block text-sm font-medium text-gray-600">
+                      {task.text}
+                    </label>
+                    <textarea
+                      value={reflections[task.id] || ''}
+                      onChange={(e) => setReflections({ ...reflections, [task.id]: e.target.value })}
+                      placeholder="Write your reflection here..."
+                      className="w-full min-h-[100px] resize-y leading-6 outline-none text-gray-800 placeholder:text-gray-400 border border-gray-300 rounded-lg p-3 focus:border-gray-500 focus:ring-1 focus:ring-gray-500"
+                    />
+                  </div>
+                ))}
+                <div className="flex justify-end gap-3 pt-2">
+                  <button
+                    className="cursor-pointer px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 text-gray-700"
+                    onClick={() => {
+                      setShowReflections(false);
+                      setLoggedSessionId(null);
+                      setReflections({});
+                    }}
+                  >
+                    Skip
+                  </button>
+                  <button
+                    className="cursor-pointer px-4 py-2 rounded-lg bg-gray-500 text-white hover:bg-gray-600"
+                    onClick={handleSaveReflections}
+                  >
+                    Save Reflections
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
         )}
       </div>
