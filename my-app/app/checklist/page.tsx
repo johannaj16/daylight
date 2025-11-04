@@ -26,7 +26,6 @@ export default function ChecklistPage() {
         </div>
         <TodoList useDayStorage />
         <Journal storageKey={todayKey} />
-        <WorkSessionList />
       </div>
     </div>
   );

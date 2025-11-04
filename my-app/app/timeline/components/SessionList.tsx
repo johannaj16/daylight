@@ -1,5 +1,6 @@
 import type { WorkSession } from '@/lib/sessions';
 import SessionCard from './SessionCard';
+import EmptyState from './EmptyState';
 
 type Props = {
   sessions: WorkSession[];
@@ -15,7 +16,7 @@ export default function SessionList({ sessions, selectedDay }: Props) {
     <div className="mt-8">
       <h2 className="font-semibold text-xl mb-4">{heading}</h2>
       <div className="space-y-3">
-        {sessions.map((session) => (
+        {sessions.length === 0 ? <EmptyState /> : sessions.map((session) => (
           <SessionCard key={session.id} session={session} />
         ))}
       </div>
