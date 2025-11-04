@@ -7,17 +7,20 @@ import type { Task as LibTask } from '@/lib/sessions';
 type Props = {
   // keep this flexible so existing callers (which expect createdAt as Date) remain compatible
   onTasksChange?: (tasks: any[]) => void;
+  // key to use in localStorage so multiple TodoList instances don't overwrite each other
+  storageKey?: string;
 };
 
 // Local task type extends the persisted Task type with an optional UI-only flag
 type Task = LibTask & { isEditing?: boolean };
 
-export default function TodoList({ onTasksChange }: Props) {
-    const STORAGE_KEY = 'todoList:tasks';
+export default function TodoList({ onTasksChange, storageKey = 'DailyJournalTodos' }: Props) {
+  const STORAGE_KEY = storageKey;
 
-    const [tasks, setTasks] = useState<Task[]>([]);
+  const [tasks, setTasks] = useState<Task[]>([]);
     const [newTaskText, setNewTaskText] = useState('');
     const [editingText, setEditingText] = useState('');
+  const [hydrated, setHydrated] = useState(false);
 
   // Load tasks from localStorage once on mount
   useEffect(() => {
@@ -31,10 +34,15 @@ export default function TodoList({ onTasksChange }: Props) {
       // ignore parse errors
       console.error('Failed to load todos from localStorage', e);
     }
-  }, []);
+    // mark hydrated regardless so we don't block persisting forever
+    setHydrated(true);
+  }, [STORAGE_KEY]);
 
   // Persist tasks to localStorage whenever they change
   useEffect(() => {
+    // don't persist until we've loaded the initial value from storage
+    if (!hydrated) return;
+
     try {
       if (typeof window === 'undefined') return;
       localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
@@ -52,7 +60,7 @@ export default function TodoList({ onTasksChange }: Props) {
     } catch (e) {
       onTasksChange?.(tasks as any[]);
     }
-  }, [tasks, onTasksChange]);
+  }, [tasks, onTasksChange, STORAGE_KEY, hydrated]);
 
     const addTask = () => {
       if (newTaskText.trim()) {
@@ -167,7 +175,7 @@ export default function TodoList({ onTasksChange }: Props) {
                         onClick={() => toggleTask(task.id)}
                         className={`w-6 h-6 border-2 rounded-sm flex items-center justify-center transition-colors ${
                         task.completed
-                            ? 'bg-blue-600 border-blue-600 text-white'
+                            ? 'bg-gray-600 border-gray-600 text-white'
                             : 'border-gray-300 hover:border-gray-400'
                         }`}
                     >

@@ -4,6 +4,7 @@ import { useCallback, useMemo, useState } from 'react';
 import Timer from "../components/Timer"
 import TodoList from "../components/TodoList"
 import VerticalNavbar from "../components/VerticalNavbar"
+import LogSessionPopup from "../components/LogSessionPopup"
 
 import { addSession, updateSessionReflections, type Task, type WorkSession } from '@/lib/sessions';
 
@@ -41,7 +42,9 @@ export default function WorkSessionPage() {
     setPendingDurationSec(durationSec);
   }
 
-  function handleLogSession() {
+  const [timerVersion, setTimerVersion] = useState(0);
+
+  function handleLogSession(data: any) {
     if (pendingDurationSec == null) return;
 
     const completedIds = tasksSnapshot.filter(t => t.completed).map(t => t.id);
@@ -53,7 +56,9 @@ export default function WorkSessionPage() {
       startedAtISO: new Date().toISOString(),
       durationSec: pendingDurationSec,
       completedTaskIds: completedIds,
-      tasks: tasksForSession, // Store full task info for display
+      focusRating: data.focusRating,
+      improvementNotes: data.improvementNotes,
+      tasks: tasksForSession,
     };
 
     addSession(newSession);
@@ -77,13 +82,16 @@ export default function WorkSessionPage() {
       // Reset tasks snapshot
       setTasksSnapshot([]);
     }
+
+    // TIMER REST LOGIC HERE
+    setTimerVersion(v => v + 1); // <- remount Timer
   }
 
   return (
     <div className="text-gray-500 min-h-screen bg-white flex">
       <VerticalNavbar />
       <div className="flex flex-col flex-1 max-w-4xl mx-auto overflow-y-auto py-6">
-        <Timer onComplete={handleTimerComplete} />
+        <Timer key={timerVersion} onComplete={handleTimerComplete} />
         <div className="mt-2 h-0.5 bg-gray-200" />
 
         <div className="py-6">
@@ -93,78 +101,24 @@ export default function WorkSessionPage() {
           <p className="px-6 mb-6">
             Be as quantitative as possible, (e.g. finish [X] math problems, read [Y] pages)
           </p>
-          <TodoList onTasksChange={handleTasksChange} />
+          <TodoList storageKey="WorkSessionTodos" onTasksChange={handleTasksChange} />
         </div>
 
         {/* Log session prompt */}
-        {showPrompt && (
-          <div className="sticky bottom-4 self-center w-[min(100%,32rem)] rounded-xl border border-gray-400 bg-white shadow-md p-4 flex items-center gap-3">
-            <div className="flex-1">
-              <div className="font-bold text-gray-600">Timer completed</div>
-              <div className="text-sm text-gray-500">
-                Log session with {Math.floor((pendingDurationSec ?? 0) / 60)} min and{' '}
-                {tasksSnapshot.filter(t => t.completed).length} completed task(s)?
-              </div>
-            </div>
-            <button
-              className="cursor-pointer px-3 py-2 rounded-lg bg-gray-500 text-white hover:bg-gray-600"
-              onClick={handleLogSession}
-            >
-              Log session
-            </button>
-            <button
-              className="cursor-pointer px-3 py-2 rounded-lg bg-gray-200 hover:bg-gray-300"
-              onClick={() => setPendingDurationSec(null)}
-            >
-              Dismiss
-            </button>
-          </div>
-        )}
-
-        {/* Reflections interface */}
-        {showReflections && (
-          <div className="px-6 py-6">
-            <div className="rounded-xl border border-gray-300 bg-white shadow-sm">
-              <div className="px-4 py-3 border-b border-gray-300">
-                <h2 className="font-semibold text-gray-500">Reflections</h2>
-                <p className="text-sm text-gray-400 mt-1">Write your reflections for each task from this work session</p>
-              </div>
-              <div className="p-4 space-y-4">
-                {tasksSnapshot.map((task) => (
-                  <div key={task.id} className="space-y-2">
-                    <label className="block text-sm font-medium text-gray-600">
-                      {task.text}
-                    </label>
-                    <textarea
-                      value={reflections[task.id] || ''}
-                      onChange={(e) => setReflections({ ...reflections, [task.id]: e.target.value })}
-                      placeholder="Write your reflection here..."
-                      className="w-full min-h-[100px] resize-y leading-6 outline-none text-gray-800 placeholder:text-gray-400 border border-gray-300 rounded-lg p-3 focus:border-gray-500 focus:ring-1 focus:ring-gray-500"
-                    />
-                  </div>
-                ))}
-                <div className="flex justify-end gap-3 pt-2">
-                  <button
-                    className="cursor-pointer px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 text-gray-700"
-                    onClick={() => {
-                      setShowReflections(false);
-                      setLoggedSessionId(null);
-                      setReflections({});
-                    }}
-                  >
-                    Skip
-                  </button>
-                  <button
-                    className="cursor-pointer px-4 py-2 rounded-lg bg-gray-500 text-white hover:bg-gray-600"
-                    onClick={handleSaveReflections}
-                  >
-                    Save Reflections
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+        {showPrompt && 
+        <LogSessionPopup
+          open={showPrompt}
+          pendingDurationSec={pendingDurationSec}
+          tasksSnapshot={tasksSnapshot}
+          onSubmit={(data) => {
+            if (!data.shouldLog) return;
+            console.log(data.focusRating)
+            console.log(data.improvementNotes)
+            handleLogSession(data);
+          }}
+          onClose={() => setPendingDurationSec(null)}
+        />
+      }
       </div>
     </div>
   );

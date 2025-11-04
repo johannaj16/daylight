@@ -10,8 +10,11 @@ export type WorkSession = {
   startedAtISO: string;
   durationSec: number;
   completedTaskIds: string[];
-  tasks?: Task[]; // Store full task info for display
-  taskReflections?: Record<string, string>; // taskId -> reflection text
+  focusRating?: number;
+  improvementNotes?: string;
+  // optional full task info and per-task reflections (added to support journaling and display)
+  tasks?: Task[];
+  taskReflections?: Record<string, string>;
 };
 
 const STORAGE_KEY = 'workSessions';

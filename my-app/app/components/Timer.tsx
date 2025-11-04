@@ -3,11 +3,12 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 type TimerProps = {
+  resetSignal?: number;
   // Fired once when the countdown reaches 0
   onComplete?: (durationSec: number) => void;
 };
 
-export default function Timer({ onComplete }: TimerProps) {
+export default function Timer({ resetSignal = 0, onComplete }: TimerProps) {
   // duration/remaining in seconds
   const [minutesInput, setMinutesInput] = useState<number>(25);
   const [duration, setDuration] = useState<number>(25 * 60);
@@ -107,6 +108,11 @@ export default function Timer({ onComplete }: TimerProps) {
     pausedAtRef.current = null;
     completedFiredRef.current = false;
   }
+
+  // 👇 whenever parent bumps resetSignal, run the same internal reset()
+  useEffect(() => {
+    reset();
+  }, [resetSignal]);
 
   useEffect(() => {
     return () => {
