@@ -1,8 +1,52 @@
+'use client';
+
 import Image from "next/image";
+import { useAuth } from "./contexts/AuthContext";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 export default function Home() {
+  const { user, loading, signOut } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push('/auth');
+    }
+  }, [user, loading, router]);
+
+  const handleSignOut = async () => {
+    await signOut();
+    router.push('/auth');
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-lg">Loading...</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return null;
+  }
+
   return (
     <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
+      <div className="row-start-1 justify-self-end">
+        <div className="flex items-center gap-4">
+          <span className="text-sm text-foreground/70">{user.email}</span>
+          <button
+            onClick={handleSignOut}
+            className="px-4 py-2 text-sm bg-foreground text-background rounded hover:bg-foreground/90 transition-colors"
+          >
+            Sign Out
+          </button>
+        </div>
+      </div>
       <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
         <Image
           className="dark:invert"
