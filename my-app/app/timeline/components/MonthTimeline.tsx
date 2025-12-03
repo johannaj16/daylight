@@ -33,14 +33,6 @@ export default function MonthTimeline({ days, year, month, selectedDay, onSelect
             {new Date(year, month).toLocaleString(undefined, { month: 'long', year: 'numeric' })}
           </h3>
         </div>
-        {selectedDay && (
-          <button
-            onClick={() => onSelectDay?.(null)}
-            className="rounded-full border border-[color:var(--muted-border)] px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-gray-500 hover:border-[color:var(--brand-200)]"
-          >
-            Clear selection
-          </button>
-        )}
       </div>
 
       <div className="timeline-scroll w-full min-w-0 overflow-x-auto overflow-y-hidden pb-2">
