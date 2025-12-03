@@ -31,6 +31,7 @@ export default function Journal({
   storageKey = 'journal:today',
   placeholder = 'Write freely about your day…',
   autosaveMs = 800,
+  className = '',
 }: Props) {
   const [savedAt, setSavedAt] = useState<Date | null>(null);
   const [workSessions, setWorkSessions] = useState<WorkSession[]>([]);
@@ -143,18 +144,26 @@ export default function Journal({
     return null;
   }
 
+  const basePanelClasses =
+    'rounded-3xl border border-[color:var(--muted-border)] bg-white/90 shadow-[0_35px_80px_-60px_rgba(212,79,0,0.9)]';
+  const editorPanelClasses = [basePanelClasses, className].filter(Boolean).join(' ');
+
   return (
     <>
-      <section className="rounded-xl border border-gray-300 bg-white shadow-sm m-6">
-        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-300">
-          <h2 className="font-semibold text-gray-500">Journal</h2>
-          <div className="text-xs text-gray-500">
-            {isMounted && savedAt ? `Autosaved ${savedAt.toLocaleTimeString()}` : 'Not saved yet'}
+      <section className={editorPanelClasses}>
+        <div className="flex items-center justify-between px-4 py-4 border-b border-[color:var(--muted-border)]">
+          <div>
+            <h2 className="text-xl font-semibold text-[color:var(--foreground)] p-2">
+              Journal
+            </h2>
+          </div>
+          <div className="rounded-full bg-[color:var(--brand-100)] px-3 py-1 text-xs text-[color:var(--brand-600)]">
+            {isMounted && savedAt ? `Autosaved ${savedAt.toLocaleTimeString()}` : 'Drafting'}
           </div>
         </div>
 
         {/* Formatting Toolbar */}
-        <div className="flex items-center gap-1 px-4 py-2 border-b border-gray-200 bg-gray-50">
+        <div className="flex flex-wrap items-center gap-1 border-b border-[color:var(--muted-border)] bg-[color:var(--surface)]/70 px-3 py-3">
           <button
             onClick={() => editor.chain().focus().toggleBold().run()}
             disabled={!editor.can().chain().focus().toggleBold().run()}
@@ -252,27 +261,35 @@ export default function Journal({
         </div>
 
         {/* Editor Content */}
-        <div className="p-0">
+        <div className="px-3 pb-6 pt-4 sm:px-6">
           <EditorContent editor={editor} />
         </div>
       </section>
 
       {/* Work Session Reflections */}
       {isMounted && workSessions.length > 0 && (
-        <section className="rounded-xl border border-gray-300 bg-white shadow-sm m-6">
-          <div className="px-4 py-3 border-b border-gray-300">
-            <h2 className="font-semibold text-gray-500">Work Session Reflections</h2>
+        <section className={`${basePanelClasses} mt-6`}>
+          <div className="border-b border-[color:var(--muted-border)] px-4 py-4">
+            <p className="text-xs font-semibold uppercase tracking-[0.4em] text-[color:var(--brand-500)]">
+              Reflections
+            </p>
+            <h2 className="mt-1 text-xl font-semibold text-[color:var(--foreground)]">
+              Notes captured after recent sprints
+            </h2>
           </div>
           <div className="p-4 space-y-6">
             {workSessions.map((session) => (
-              <div key={session.id} className="border-b border-gray-200 last:border-b-0 pb-6 last:pb-0">
-                <div className="mb-4">
-                  <h3 className="font-medium text-gray-600 text-sm mb-1">
+              <div
+                key={session.id}
+                className="rounded-2xl border border-[color:var(--muted-border)] bg-white/70 px-4 py-3"
+              >
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                  <h3 className="text-sm font-semibold text-[color:var(--foreground)]">
                     {fmtWhen(session.startedAtISO)}
                   </h3>
-                  <p className="text-xs text-gray-400">
+                  <span className="rounded-full bg-[color:var(--brand-100)] px-3 py-1 text-xs font-medium text-[color:var(--brand-600)]">
                     {Math.floor(session.durationSec / 60)} min
-                  </p>
+                  </span>
                 </div>
                 {session.tasks && session.taskReflections && (
                   <div className="space-y-4">
@@ -280,11 +297,14 @@ export default function Journal({
                       const reflection = session.taskReflections?.[task.id];
                       if (!reflection) return null;
                       return (
-                        <div key={task.id} className="pl-4 border-l-2 border-gray-200">
-                          <h4 className="font-medium text-gray-700 text-sm mb-2">
+                        <div
+                          key={task.id}
+                          className="rounded-2xl border border-white/60 bg-white/80 px-4 py-3"
+                        >
+                          <h4 className="text-sm font-semibold text-[color:var(--foreground)]">
                             {task.text}
                           </h4>
-                          <p className="text-sm text-gray-600 leading-6 whitespace-pre-wrap">
+                          <p className="mt-1 text-sm text-gray-600 whitespace-pre-wrap">
                             {reflection}
                           </p>
                         </div>

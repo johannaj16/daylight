@@ -121,92 +121,96 @@ export default function Timer({ resetSignal = 0, onComplete }: TimerProps) {
   }, []);
 
   return (
-    <section className="w-full flex flex-col items-center gap-6 py-8 text-gray-400">
+    <section className="w-full space-y-6 text-[color:var(--foreground)]">
       {/* Controls */}
-      <div className="flex items-end gap-3">
-        <div className="flex flex-col">
-          <label htmlFor="minutes" className="text-sm text-gray-600">
-            Minutes
-          </label>
-          <input
-            id="minutes"
-            type="number"
-            min={1}
-            max={240}
-            step={1}
-            value={minutesInput}
-            onChange={(e) => setMinutesInput(Number(e.target.value))}
-            className="w-50 rounded-lg border px-3 py-2 outline-none focus:ring-2 focus:ring-gray-900"
-          />
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div className="flex w-full flex-col gap-2 sm:w-auto">
+          <div className="flex items-center gap-3 rounded-2xl border border-[color:var(--muted-border)] bg-white/80 px-4 py-3 shadow-inner">
+            <input
+              id="minutes"
+              type="number"
+              min={1}
+              max={240}
+              step={1}
+              value={minutesInput}
+              onChange={(e) => setMinutesInput(Number(e.target.value))}
+              className="w-24 border-none bg-transparent text-2xl font-semibold text-[color:var(--foreground)] focus:outline-none"
+            />
+            <span className="text-sm text-gray-500">minutes</span>
+          </div>
         </div>
         <button
           onClick={applyMinutes}
-          className="h-10 px-4 rounded-lg bg-gray-500 cursor-pointer text-white hover:bg-gray-500"
+          className="h-12 rounded-2xl bg-[color:var(--brand-600)] px-6 text-sm font-semibold uppercase tracking-[0.2em] text-white shadow-[0_20px_45px_-30px_rgba(230,88,12,0.9)] transition hover:-translate-y-0.5 hover:bg-[color:var(--brand-700)]"
         >
-          Set
+          Set timer
         </button>
       </div>
 
       {/* Circular timer */}
-      <div className="relative" aria-live="polite" aria-label="Remaining time">
-        <svg
-          width={size}
-          height={size}
-          viewBox={`0 0 ${size} ${size}`}
-          className="select-none"
+      <div className="flex flex-col items-center">
+        <div
+          className="relative flex items-center justify-center rounded-[3rem] bg-gradient-to-b from-white/90 to-white/70 p-6 shadow-[0_40px_80px_-65px_rgba(212,79,0,0.9)]"
+          aria-live="polite"
+          aria-label="Remaining time"
         >
-          {/* Track */}
-          <circle
-            cx={size / 2}
-            cy={size / 2}
-            r={radius}
-            strokeWidth={stroke}
-            className="text-gray-200"
-            stroke="currentColor"
-            fill="transparent"
-          />
-          {/* Progress */}
-          <circle
-            cx={size / 2}
-            cy={size / 2}
-            r={radius}
-            strokeWidth={stroke}
-            className="text-gray-500 transition-[stroke-dashoffset]"
-            stroke="currentColor"
-            fill="transparent"
-            strokeLinecap="round"
-            strokeDasharray={circumference}
-            strokeDashoffset={dashOffset}
-          />
-        </svg>
+          <svg
+            width={size}
+            height={size}
+            viewBox={`0 0 ${size} ${size}`}
+            className="select-none"
+          >
+            <circle
+              cx={size / 2}
+              cy={size / 2}
+              r={radius}
+              strokeWidth={stroke}
+              className="text-[color:var(--brand-100)]"
+              stroke="currentColor"
+              fill="transparent"
+            />
+            <circle
+              cx={size / 2}
+              cy={size / 2}
+              r={radius}
+              strokeWidth={stroke}
+              className="text-[color:var(--brand-600)] transition-[stroke-dashoffset]"
+              stroke="currentColor"
+              fill="transparent"
+              strokeLinecap="round"
+              strokeDasharray={circumference}
+              strokeDashoffset={dashOffset}
+            />
+          </svg>
 
-        {/* Center content */}
-        <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <div className="text-4xl font-semibold tabular-nums">{format(remaining)}</div>
-          <div className="text-xs text-gray-500">
-            {running ? 'Counting down…' : 'Paused'}
+          <div className="absolute inset-0 flex flex-col items-center justify-center">
+            <div className="text-6xl font-semibold tabular-nums">
+              {format(remaining)}
+            </div>
+            <div className="text-sm text-gray-500">
+              {running ? "Counting down" : "Paused"}
+            </div>
           </div>
+        </div>
+
+        <div className="mt-6 rounded-full bg-[color:var(--brand-100)] px-4 py-1 text-xs font-semibold uppercase tracking-[0.4em] text-[color:var(--brand-600)]">
+          {Math.round(progress * 100)}% complete · Total {format(duration)}
         </div>
       </div>
 
-      {/* Progress text */}
-      <div className="text-sm text-gray-600">
-        {Math.round(progress * 100)}% complete · Total {format(duration)}
-      </div>
-
       {/* Start/Reset Buttons */}
-      <div className="flex gap-2">
+      <div className="flex flex-col gap-3 sm:flex-row">
         <button
           onClick={running ? pause : start}
-          className="h-10 px-4 rounded-lg bg-gray-500 text-white hover:bg-gray-500 cursor-pointer"
+          className="flex-1 rounded-2xl bg-[color:var(--brand-700)] px-4 py-3 text-center text-sm font-semibold uppercase tracking-[0.3em] text-white shadow-[0_25px_45px_-35px_rgba(230,88,12,0.9)] transition hover:-translate-y-0.5 hover:bg-[color:var(--brand-800)]"
         >
-          {running ? 'Pause' : 'Start'}
+          {running ? "Pause sprint" : "Start sprint"}
         </button>
         <button
           onClick={reset}
-          className="cursor-pointer h-10 px-4 rounded-lg bg-gray-200 hover:bg-gray-300"
+          className="flex-1 rounded-2xl border border-[color:var(--muted-border)] bg-white/80 px-4 py-3 text-center text-sm font-semibold uppercase tracking-[0.3em] text-gray-500 transition hover:border-[color:var(--brand-200)] hover:text-[color:var(--brand-500)]"
         >
-          Reset
+          Reset timer
         </button>
       </div>
     </section>

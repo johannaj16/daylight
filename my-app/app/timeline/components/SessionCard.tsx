@@ -9,33 +9,33 @@ export default function SessionCard({ session }: Props) {
   const tasks = completedTasks(session);
 
   return (
-    <div className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm hover:shadow-md transition-shadow">
-      <div className="flex items-start justify-between">
-        <div className="flex-1">
-          <div className="font-medium text-gray-700">
-            {formatDate(session.startedAtISO)} at {formatTime(session.startedAtISO)}
-          </div>
-          <div className="text-sm text-gray-500 mt-1">
-            Duration: {formatDuration(session.durationSec)}
-          </div>
-          {tasks.length > 0 && (
-            <div className="mt-3">
-              <div className="text-sm font-medium text-gray-600 mb-2">
-                Completed Tasks:
-              </div>
-              <ul className="space-y-1 text-sm text-gray-600">
-                {tasks.map((task) => (
-                  <li key={task.id} className="flex items-start gap-2">
-                    <span className="text-blue-500 mt-0.5">✓</span>
-                    <span>{task.text}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
+    <div className="px-6 py-5 transition hover:bg-[color:var(--brand-100)]/40">
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <p className="text-sm font-semibold text-[color:var(--foreground)]">
+            {formatDate(session.startedAtISO)} · {formatTime(session.startedAtISO)}
+          </p>
+          <p className="text-xs text-gray-500">
+            Duration {formatDuration(session.durationSec)}
+          </p>
+        </div>
+        <div className="rounded-full bg-[color:var(--brand-100)] px-4 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-[color:var(--brand-600)]">
+          {tasks.length} tasks
         </div>
       </div>
+
+      {tasks.length > 0 && (
+        <ul className="mt-4 flex flex-wrap gap-2">
+          {tasks.map((task) => (
+            <li
+              key={task.id}
+              className="rounded-2xl border border-[color:var(--muted-border)] bg-white/80 px-4 py-2 text-sm text-[color:var(--foreground)] shadow-[0_15px_30px_-25px_rgba(212,79,0,0.9)]"
+            >
+              {task.text}
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }
-
