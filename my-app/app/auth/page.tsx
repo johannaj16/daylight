@@ -65,16 +65,20 @@ export default function AuthPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      <div className="w-full max-w-md">
-        <div className="bg-foreground text-background rounded-lg p-8 shadow-lg">
-          <h1 className="text-2xl font-bold mb-6 text-center">
-            {isSignUp ? 'Sign Up' : 'Sign In'}
+    <div className="relative min-h-screen bg-[color:var(--background)]">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(255,200,154,0.35),transparent_50%),radial-gradient(circle_at_80%_0%,rgba(255,190,200,0.28),transparent_45%)]" />
+      <div className="relative z-10 flex min-h-screen items-center justify-center px-4 py-10">
+        <div className="w-full max-w-md rounded-3xl border border-[color:var(--muted-border)] bg-white/90 p-8 text-[color:var(--foreground)] shadow-[0_30px_70px_-40px_rgba(212,79,0,0.9)]">
+          <h1 className="mb-2 text-center text-xs font-semibold uppercase tracking-[0.4em] text-[color:var(--brand-500)]">
+            Daylight
           </h1>
+          <h2 className="mb-6 text-center text-2xl font-semibold text-[color:var(--foreground)]">
+            {isSignUp ? 'Sign Up' : 'Sign In'}
+          </h2>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label htmlFor="email" className="block text-sm font-medium mb-1">
+              <label htmlFor="email" className="mb-1 block text-sm font-medium text-[color:var(--brand-600)]">
                 Email
               </label>
               <input
@@ -83,13 +87,13 @@ export default function AuthPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full px-4 py-2 rounded border border-background/20 bg-background/10 text-background placeholder-background/50 focus:outline-none focus:ring-2 focus:ring-background/50"
+                className="w-full rounded-2xl border border-[color:var(--muted-border)] bg-white/80 px-4 py-3 text-[color:var(--foreground)] placeholder:text-[color:var(--brand-300)] focus:outline-none focus:ring-2 focus:ring-[color:var(--brand-200)]"
                 placeholder="you@example.com"
               />
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium mb-1">
+              <label htmlFor="password" className="mb-1 block text-sm font-medium text-[color:var(--brand-600)]">
                 Password
               </label>
               <input
@@ -99,19 +103,19 @@ export default function AuthPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 minLength={6}
-                className="w-full px-4 py-2 rounded border border-background/20 bg-background/10 text-background placeholder-background/50 focus:outline-none focus:ring-2 focus:ring-background/50"
+                className="w-full rounded-2xl border border-[color:var(--muted-border)] bg-white/80 px-4 py-3 text-[color:var(--foreground)] placeholder:text-[color:var(--brand-300)] focus:outline-none focus:ring-2 focus:ring-[color:var(--brand-200)]"
                 placeholder="••••••••"
               />
             </div>
 
             {error && (
-              <div className="bg-red-500/20 border border-red-500/50 text-red-100 px-4 py-2 rounded text-sm">
+              <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-500">
                 {error}
               </div>
             )}
 
             {message && (
-              <div className="bg-green-500/20 border border-green-500/50 text-green-100 px-4 py-2 rounded text-sm">
+              <div className="rounded-2xl border border-[color:var(--accent-green)]/40 bg-[color:var(--accent-green)]/10 px-4 py-2 text-sm text-[color:var(--accent-green)]">
                 {message}
               </div>
             )}
@@ -119,7 +123,7 @@ export default function AuthPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-background text-foreground font-medium py-2 px-4 rounded hover:bg-background/90 focus:outline-none focus:ring-2 focus:ring-background/50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="w-full rounded-2xl bg-[color:var(--brand-600)] py-3 text-sm font-semibold uppercase tracking-[0.3em] text-white shadow-[0_25px_40px_-30px_rgba(230,88,12,0.9)] transition hover:-translate-y-0.5 hover:bg-[color:var(--brand-700)] focus:outline-none focus:ring-2 focus:ring-[color:var(--brand-200)] disabled:cursor-not-allowed disabled:bg-[color:var(--brand-300)]"
             >
               {loading ? 'Loading...' : isSignUp ? 'Sign Up' : 'Sign In'}
             </button>
@@ -133,7 +137,7 @@ export default function AuthPage() {
                 setError(null);
                 setMessage(null);
               }}
-              className="text-background/70 hover:text-background text-sm underline"
+              className="text-sm font-medium text-[color:var(--brand-600)] underline hover:text-[color:var(--brand-700)]"
             >
               {isSignUp
                 ? 'Already have an account? Sign in'
@@ -145,4 +149,3 @@ export default function AuthPage() {
     </div>
   );
 }
-
