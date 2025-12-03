@@ -4,7 +4,7 @@ import { loadSessions, type WorkSession } from "@/lib/sessions";
 import SessionList from "./components/SessionList";
 import EmptyState from "./components/EmptyState";
 import MonthTimeline from "./components/MonthTimeline";
-import { getDaysInRange } from "@/lib/days";
+import { getDaysInRange, formatDateKey } from "@/lib/days";
 import PageShell from "../components/PageShell";
 
 export default function TimelinePage() {
@@ -12,7 +12,7 @@ export default function TimelinePage() {
   const [days, setDays] = useState<any[]>([]);
   // default to current day selected
   const [selectedDay, setSelectedDay] = useState<string | null>(() =>
-    new Date().toISOString().slice(0, 10)
+    formatDateKey()
   );
 
   useEffect(() => {
@@ -25,19 +25,17 @@ export default function TimelinePage() {
     setSessions(loadedSessions);
     // load days for current month
     const today = new Date();
-    const start = new Date(today.getFullYear(), today.getMonth(), 1)
-      .toISOString()
-      .slice(0, 10);
-    const end = new Date(today.getFullYear(), today.getMonth() + 1, 0)
-      .toISOString()
-      .slice(0, 10);
+    const start = formatDateKey(new Date(today.getFullYear(), today.getMonth(), 1));
+    const end = formatDateKey(new Date(today.getFullYear(), today.getMonth() + 1, 0));
     const monthDays = getDaysInRange(start, end);
     setDays(monthDays);
   }, []);
   // If a day is selected, only show sessions for that day
   const displayedSessions = selectedDay
     ? sessions.filter(
-        (s) => (s.startedAtISO || "").slice(0, 10) === selectedDay
+        (s) =>
+          s.startedAtISO &&
+          formatDateKey(new Date(s.startedAtISO)) === selectedDay
       )
     : sessions;
 

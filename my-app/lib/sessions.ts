@@ -1,3 +1,5 @@
+import { formatDateKey } from './days';
+
 export type Task = {
   id: string;
   text: string;
@@ -50,7 +52,7 @@ export function addSession(newSession: WorkSession) {
   try {
     const raw = localStorage.getItem(DAYS_KEY) || '{}';
     const days = JSON.parse(raw) as Record<string, any>;
-    const date = new Date(newSession.startedAtISO).toISOString().slice(0, 10);
+    const date = formatDateKey(new Date(newSession.startedAtISO));
     if (!days[date]) days[date] = { date, dailyTodos: [], journalEntries: [], workSessions: [] };
     days[date].workSessions = days[date].workSessions || [];
     days[date].workSessions.unshift(newSession);

@@ -2,6 +2,19 @@ import type { WorkSession } from '@/lib/sessions';
 import SessionCard from './SessionCard';
 import EmptyState from './EmptyState';
 
+function formatHeadingDate(dateKey: string) {
+  const [year, month, day] = dateKey.split('-').map((part) => parseInt(part, 10));
+  if (!year || !month || !day) {
+    return new Date(dateKey).toLocaleDateString();
+  }
+  // month/day come in as 1-indexed, so adjust for Date constructor to keep the local day stable
+  return new Date(year, month - 1, day).toLocaleDateString(undefined, {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+}
+
 type Props = {
   sessions: WorkSession[];
   selectedDay?: string | null;
@@ -9,11 +22,7 @@ type Props = {
 
 export default function SessionList({ sessions, selectedDay }: Props) {
   const heading = selectedDay
-    ? `Sessions for ${new Date(selectedDay).toLocaleDateString(undefined, {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-      })}`
+    ? `Sessions for ${formatHeadingDate(selectedDay)}`
     : 'All Sessions';
 
   return (

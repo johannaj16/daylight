@@ -1,6 +1,7 @@
 "use client";
 
 import React from 'react';
+import { formatDateKey } from '@/lib/days';
 import type { DayData } from '@/lib/days';
 
 type Props = {
@@ -38,7 +39,7 @@ export default function MonthTimeline({ days, year, month, selectedDay, onSelect
       <div className="timeline-scroll w-full min-w-0 overflow-x-auto overflow-y-hidden pb-2">
         <div className="flex w-max flex-nowrap items-start gap-4 pr-4">
           {monthDays.map((d) => {
-            const key = d.toISOString().slice(0,10);
+            const key = formatDateKey(d);
             const day = byDate.get(key);
             const sessions = day?.workSessions || [];
             const isSelected = selectedDay === key;

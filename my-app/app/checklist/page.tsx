@@ -4,9 +4,10 @@ import TodoList from "../components/TodoList";
 import Journal from "../components/Journal";
 import WorkSessionList from "../components/WorkSessionList";
 import PageShell from "../components/PageShell";
+import { formatDateKey } from "@/lib/days";
 
 export default function ChecklistPage() {
-  const todayKey = `journal:${new Date().toISOString().slice(0, 10)}`;
+  const todayKey = `journal:${formatDateKey()}`;
   const today = new Date();
   const formattedDate = today.toLocaleDateString(undefined, {
     weekday: "long",
