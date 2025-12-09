@@ -15,6 +15,12 @@ export default function Home() {
     }
   }, [user, loading, router]);
 
+    useEffect(() => {
+    if (!loading && user) {
+      router.replace('/checklist');
+    }
+  }, [user, loading, router]);
+
   const handleSignOut = async () => {
     await signOut();
     router.push('/auth');
@@ -33,12 +39,6 @@ export default function Home() {
   if (!user) {
     return null;
   }
-
-  useEffect(() => {
-    if (!loading && user) {
-      router.replace('/checklist');
-    }
-  }, [user, loading, router]);
 
   return null;
 }
